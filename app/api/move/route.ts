@@ -3,6 +3,9 @@ import { gameStore } from '@/app/game-store'
 
 type Stone = "black" | "white"
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function POST(request: NextRequest) {
   try {
     const { row, col, stone } = await request.json()
