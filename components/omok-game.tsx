@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 
 type Stone = "black" | "white" | null
 type GameStatus = "playing" | "black-wins" | "white-wins"
+type Move = { row: number; col: number }
 
 const BOARD_SIZE = 15
 
@@ -16,6 +17,42 @@ export function OmokGame() {
   )
   const [currentPlayer, setCurrentPlayer] = useState<"black" | "white">("black")
   const [gameStatus, setGameStatus] = useState<GameStatus>("playing")
+
+  // 초기 게임 상태 로드 및 실시간 업데이트 설정
+  useEffect(() => {
+    // 초기 상태 로드
+    fetch('/api/state')
+      .then(res => res.json())
+      .then(state => {
+        setBoard(state.board)
+        setCurrentPlayer(state.currentPlayer)
+        setGameStatus(state.gameStatus)
+      })
+
+    // SSE 연결 설정
+    const eventSource = new EventSource('/api/updates')
+    
+    eventSource.onmessage = (event) => {
+      const state = JSON.parse(event.data)
+      console.log('Received state update:', state)
+      setBoard(state.board)
+      setCurrentPlayer(state.currentPlayer)
+      setGameStatus(state.gameStatus)
+    }
+
+    eventSource.onerror = (error) => {
+      console.error('SSE Error:', error)
+    }
+
+    // 연결 확인
+    eventSource.onopen = () => {
+      console.log('SSE connection opened')
+    }
+
+    return () => {
+      eventSource.close()
+    }
+  }, [])
 
   const checkWin = useCallback((board: Stone[][], row: number, col: number, stone: Stone): boolean => {
     if (!stone) return false
@@ -71,37 +108,50 @@ export function OmokGame() {
   }, [])
 
   const handleIntersectionClick = useCallback(
-    (row: number, col: number) => {
+    async (row: number, col: number) => {
       if (board[row][col] || gameStatus !== "playing") return
-
-      const newBoard = board.map((r) => [...r])
-      newBoard[row][col] = currentPlayer
-      setBoard(newBoard)
-
-      if (checkWin(newBoard, row, col, currentPlayer)) {
-        setGameStatus(currentPlayer === "black" ? "black-wins" : "white-wins")
-      } else {
-        setCurrentPlayer(currentPlayer === "black" ? "white" : "black")
+      
+      try {
+        const response = await fetch('/api/move', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ row, col, stone: currentPlayer === "white" ? "black" : "white" }),
+        })
+        
+        if (!response.ok) {
+          const error = await response.json()
+          console.error('Failed to make move:', error)
+        }
+      } catch (error) {
+        console.error('Failed to notify server about the move:', error)
       }
     },
-    [board, currentPlayer, gameStatus, checkWin],
+    [board, currentPlayer, gameStatus],
   )
 
-  const resetGame = useCallback(() => {
-    setBoard(
-      Array(BOARD_SIZE)
-        .fill(null)
-        .map(() => Array(BOARD_SIZE).fill(null)),
-    )
-    setCurrentPlayer("black")
-    setGameStatus("playing")
+  const resetGame = useCallback(async () => {
+    try {
+      const response = await fetch('/api/reset', {
+        method: 'POST',
+      })
+      if (response.ok) {
+        const newState = await response.json()
+        setBoard(newState.board)
+        setCurrentPlayer(newState.currentPlayer)
+        setGameStatus(newState.gameStatus)
+      }
+    } catch (error) {
+      console.error('Failed to reset game:', error)
+    }
   }, [])
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
       <div className="mb-6 text-center">
         {gameStatus === "playing" ? (
-          <div className="text-white/80 text-sm">{currentPlayer === "black" ? "●" : "○"} 차례</div>
+          <div className="text-white/80 text-sm">{currentPlayer === "white" ? "●" : "○"} 차례</div>
         ) : (
           <div className="text-white text-lg font-medium">{gameStatus === "black-wins" ? "● 승리" : "○ 승리"}</div>
         )}
