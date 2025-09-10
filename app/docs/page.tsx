@@ -78,7 +78,7 @@ export default function DocsPage() {
     stone = "black"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://localhost:3001/api/move" -Method Post -Body $body -ContentType "application/json"`} />
+Invoke-RestMethod -Uri "https://v0-dddd-kngsn3zpdrl-4y6wucajs-noth3devs-projects.vercel.app/api/move" -Method Post -Body $body -ContentType "application/json"`} />
                 </div>
               </div>
             </div>
@@ -90,7 +90,7 @@ Invoke-RestMethod -Uri "http://localhost:3001/api/move" -Method Post -Body $body
               </div>
               <div>
                 <p className="text-sm text-white/80 mb-2">PowerShell 예시:</p>
-                <CodeBlock code={`Invoke-RestMethod -Uri "http://localhost:3001/api/state" -Method Get`} />
+                <CodeBlock code={`Invoke-RestMethod -Uri "https://v0-dddd-kngsn3zpdrl-4y6wucajs-noth3devs-projects.vercel.app/api/state" -Method Get`} />
               </div>
             </div>
 
@@ -101,7 +101,7 @@ Invoke-RestMethod -Uri "http://localhost:3001/api/move" -Method Post -Body $body
               </div>
               <div>
                 <p className="text-sm text-white/80 mb-2">PowerShell 예시:</p>
-                <CodeBlock code={`Invoke-RestMethod -Uri "http://localhost:3001/api/reset" -Method Post`} />
+                <CodeBlock code={`Invoke-RestMethod -Uri "https://v0-dddd-kngsn3zpdrl-4y6wucajs-noth3devs-projects.vercel.app/api/reset" -Method Post`} />
               </div>
             </div>
 
@@ -112,7 +112,7 @@ Invoke-RestMethod -Uri "http://localhost:3001/api/move" -Method Post -Body $body
               </div>
               <div>
                 <p className="text-sm text-white/80 mb-2">JavaScript 예시:</p>
-                <CodeBlock code={`const eventSource = new EventSource('/api/updates')
+                <CodeBlock code={`const eventSource = new EventSource('https://v0-dddd-kngsn3zpdrl-4y6wucajs-noth3devs-projects.vercel.app/api/updates')
 eventSource.onmessage = (event) => {
   const state = JSON.parse(event.data)
   // state.board: 현재 바둑판 상태
