@@ -11,15 +11,23 @@ function PrismCodeBlock({ code, language = "powershell" }: { code: string; langu
     const loadPrism = async () => {
       try {
         if (typeof window !== "undefined" && !(window as any).Prism) {
+          // @ts-ignore - prismjs has no bundled types in this project
           const PrismModule = await import("prismjs")
-          const Prism = PrismModule.default || PrismModule
+          const Prism = (PrismModule as any).default || PrismModule
 
+          // @ts-ignore - language components don't ship types here
           await import("prismjs/components/prism-json")
+          // @ts-ignore
           await import("prismjs/components/prism-javascript")
+          // @ts-ignore
           await import("prismjs/components/prism-python")
+          // @ts-ignore
           await import("prismjs/components/prism-csharp")
+          // @ts-ignore
           await import("prismjs/components/prism-go")
+          // @ts-ignore
           await import("prismjs/components/prism-typescript")
+          // @ts-ignore
           await import("prismjs/components/prism-powershell")
           ;(window as any).Prism = Prism
 
